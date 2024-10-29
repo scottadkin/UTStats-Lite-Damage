@@ -103,8 +103,6 @@ function PostBeginPlay(){
 	}
 	
 	
-	printLog("Does this work?");
-
 	Level.Game.RegisterDamageMutator(self);
 	
 	/*foreach AllActors(class'mutator', M){
@@ -122,8 +120,13 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local PlayerReplicationInfo Vpri;
 	local PlayerReplicationInfo Ipri;
 	
-	//ADD CHECK FOR SELF DAMAGE AND KEEP TRACK DIFFERENTLY
-
+	
+	//only want 2 damage counted if a player did 100 damage to a player with 2 health left
+	local int FixedDamage;
+	local int VictimHealth;
+	local int InstigatorHealth;
+	
+	fixedDamage = ActualDamage;
 
 	if(Victim.PlayerReplicationInfo != None){
 	
@@ -136,26 +139,37 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		
 	}
 	
+	/*InstigatorHealth = InstigatedBy.Health;
+	VictimHealth = Victim.Health;
+	
+	if(ActualDamage > VictimHealth){
+		fixedDamage = VictimHealth;	
+	}*/
+	
+	//some times health is negative
+	if(fixedDamage < 0) fixedDamage = 0;
+	
 	if(Vpri != None && Ipri != None){
 	
 		if(Vpri.PlayerID != Ipri.PlayerID){
 		
-			updateDamageDelt(Ipri, ActualDamage, false);
-			updateDamageTaken(Vpri, ActualDamage);
+			updateDamageDelt(Ipri, fixedDamage, false);
+			updateDamageTaken(Vpri, fixedDamage);
 			
 		}else{
-			updateDamageDelt(Ipri, ActualDamage, true);
+			log(Ipri.PlayerName$chr(9)$InstigatedBy.Health$Ipri$chr(9)$fixedDamage);
+			updateDamageDelt(Ipri, fixedDamage, true);
 		}
 	}
 	
 	if(Vpri != None && Ipri == None){
 		
-		updateDamageTaken(Vpri, ActualDamage);
+		updateDamageTaken(Vpri, fixedDamage);
 	}
 	
 	if(Vpri == None && Ipri != None){
 	
-		updateDamageDelt(Ipri, ActualDamage, false);
+		updateDamageDelt(Ipri, fixedDamage, false);
 	}
 
    if (NextDamageMutator != None)
