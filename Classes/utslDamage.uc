@@ -13,6 +13,20 @@ struct PlayerDamage{
 
 var PlayerDamage DamageList[64];
 
+event PreBeginPlay()
+{
+    local Actor A;
+    
+    Super.PreBeginPlay();
+    
+    foreach AllActors(Class, A)
+        break;
+    if (A != self)
+        return;
+        
+    Level.Game.BaseMutator.AddMutator(self);
+}
+
 //if player id doesnt exist return the index of the next empty DamageList
 function int getPlayerIndexById(int TargetId){
 
@@ -34,11 +48,10 @@ function int getPlayerIndexById(int TargetId){
 	return -1;
 }
 
-function updateDamageDelt(PlayerReplicationInfo pInfo, int DamageDelt){
+function updateDamageDelt(PlayerReplicationInfo pInfo, int DamageDelt, bool bSelfDamage){
 
 	
 	local int dIndex;
-	local PlayerDamage D;
 	
 	dIndex = getPlayerIndexById(pInfo.PlayerID);
 	
@@ -47,15 +60,17 @@ function updateDamageDelt(PlayerReplicationInfo pInfo, int DamageDelt){
 		return;
 	}
 	
-	//D = DamageList[dIndex];
-	DamageList[dIndex].DamageDelt += DamageDelt;
+	if(!bSelfDamage){
+		DamageList[dIndex].DamageDelt += DamageDelt;
+	}else{
+		DamageList[dIndex].SelfDamage += DamageDelt;
+	}
 }
 
 function updateDamageTaken(PlayerReplicationInfo pInfo, int DamageTaken){
 
 	
 	local int dIndex;
-	local PlayerDamage D;
 	
 	dIndex = getPlayerIndexById(pInfo.PlayerID);
 	
@@ -64,7 +79,6 @@ function updateDamageTaken(PlayerReplicationInfo pInfo, int DamageTaken){
 		return;
 	}
 	
-	//D = DamageList[dIndex];
 	DamageList[dIndex].DamageTaken += DamageTaken;
 }
 
@@ -78,10 +92,10 @@ function printLog(string s){
 	Level.Game.LocalLog.LogEventString(Level.Game.LocalLog.GetTimeStamp() $ Chr(9) $ s);
 }
 
+
 function PostBeginPlay(){
 	
 	local int i;
-	local Mutator M;
 
 	for(i = 0; i < 64; i++){
 	
@@ -93,11 +107,11 @@ function PostBeginPlay(){
 
 	Level.Game.RegisterDamageMutator(self);
 	
-	foreach AllActors(class'mutator', M){
+	/*foreach AllActors(class'mutator', M){
 		
-		if(M == class'utslDamage') return;
+		if(M != self) return;
 	}
-	Level.Game.BaseMutator.AddMutator(self);
+	Level.Game.BaseMutator.AddMutator(self);*/
 	//Level.Game.RegisterMessageMutator(self);
 }
 
@@ -110,40 +124,54 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	//ADD CHECK FOR SELF DAMAGE AND KEEP TRACK DIFFERENTLY
 
-	
+
 	if(Victim.PlayerReplicationInfo != None){
 	
 		Vpri = Victim.PlayerReplicationInfo;
-		log(Vpri.PlayerName $ chr(9) $ " took " $chr(9)$ ActualDamage  $chr(9)$" damage");
 	}
 	
 	if(InstigatedBy.PlayerReplicationInfo != None){
 	
 		Ipri = InstigatedBy.PlayerReplicationInfo;
-		updateDamageDelt(Ipri, ActualDamage);
-		printLog("d"$chr(9)$Ipri.PlayerId$chr(9)$ActualDamage);
 		
-		log(Ipri.PlayerName $ chr(9) $ " delt " $chr(9)$ ActualDamage  $chr(9)$" damage");
+	}
+	
+	if(Vpri != None && Ipri != None){
+	
+		if(Vpri.PlayerID != Ipri.PlayerID){
+		
+			updateDamageDelt(Ipri, ActualDamage, false);
+			updateDamageTaken(Vpri, ActualDamage);
+			
+		}else{
+			updateDamageDelt(Ipri, ActualDamage, true);
+		}
+	}
+	
+	if(Vpri != None && Ipri == None){
+		
+		updateDamageTaken(Vpri, ActualDamage);
+	}
+	
+	if(Vpri == None && Ipri != None){
+	
+		updateDamageDelt(Ipri, ActualDamage, false);
 	}
 
    if (NextDamageMutator != None)
         NextDamageMutator.MutatorTakeDamage(ActualDamage,Victim,InstigatedBy,HitLocation,Momentum,DamageType);
 }
-//doesnt work if mutator is a damage mutator
+
 function bool HandleEndGame(){
 
-	
 	local int i;
 	local PlayerDamage d;
-	
-	log("HANDNADNSDJSNADJASNDJNASJDNASJIDNASJINDASIONDIOASNDIOASNDIOANSIODNASION");
 	
 	for(i = 0; i < 64; i++){
 		
 		d = DamageList[i];
-		log(i);
-		//if(d.PID == -1) break;
-		printLog("sld" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken);
+		if(d.PID == -1) break;
+		printLog("sld" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage);
 	}
 	
 	if(NextMutator != None){
