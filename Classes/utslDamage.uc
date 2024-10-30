@@ -3,12 +3,15 @@
 //=============================================================================
 class utslDamage expands Mutator;
 
+var bool bTeamGame;
 
 struct PlayerDamage{
 	var int PID;
 	var int DamageTaken;
 	var int DamageDelt;
 	var int SelfDamage;
+	var int TeamDamageDelt;
+	var int TeamDamageTaken;
 };
 
 var PlayerDamage DamageList[64];
@@ -38,7 +41,6 @@ function int getPlayerIndexById(int TargetId){
 		P = DamageList[i];
 		
 		if(P.PID == -1){
-			log("set new player INDEX");
 			DamageList[i].PID = TargetId;
 			return 1;
 		}
@@ -48,28 +50,9 @@ function int getPlayerIndexById(int TargetId){
 	return -1;
 }
 
-function updateDamageDelt(PlayerReplicationInfo pInfo, int DamageDelt, bool bSelfDamage){
 
-	
-	local int dIndex;
-	
-	dIndex = getPlayerIndexById(pInfo.PlayerID);
-	
-	if(dIndex == -1){
-		log("Failed to get playerDamage(updateDamageDelt)");
-		return;
-	}
-	
-	if(!bSelfDamage){
-		DamageList[dIndex].DamageDelt += DamageDelt;
-	}else{
-		DamageList[dIndex].SelfDamage += DamageDelt;
-	}
-}
+function updateDamage(PlayerReplicationInfo pInfo, string type, int Damage){
 
-function updateDamageTaken(PlayerReplicationInfo pInfo, int DamageTaken){
-
-	
 	local int dIndex;
 	
 	dIndex = getPlayerIndexById(pInfo.PlayerID);
@@ -79,7 +62,28 @@ function updateDamageTaken(PlayerReplicationInfo pInfo, int DamageTaken){
 		return;
 	}
 	
-	DamageList[dIndex].DamageTaken += DamageTaken;
+	switch(type){
+		case "delt": 
+			DamageList[dIndex].DamageDelt += Damage;
+		 break;
+		case "taken": 
+			DamageList[dIndex].DamageTaken += Damage;
+		 break;
+		case "self": 
+			DamageList[dIndex].SelfDamage += Damage;
+		break;
+		case "teamDelt":
+			DamageList[dIndex].TeamDamageDelt += Damage;
+		break;
+		case "teamTaken":
+			DamageList[dIndex].TeamDamageTaken += Damage;
+		break;
+		default:
+			log("Unkown damage type");
+		break;
+	}
+	
+
 }
 
 
@@ -96,21 +100,16 @@ function printLog(string s){
 function PostBeginPlay(){
 	
 	local int i;
+	
+	bTeamGame = Level.Game.bTeamGame;
 
 	for(i = 0; i < 64; i++){
 	
 		DamageList[i].PID = -1;
 	}
 	
-	
 	Level.Game.RegisterDamageMutator(self);
 	
-	/*foreach AllActors(class'mutator', M){
-		
-		if(M != self) return;
-	}
-	Level.Game.BaseMutator.AddMutator(self);*/
-	//Level.Game.RegisterMessageMutator(self);
 }
 
 
@@ -121,13 +120,6 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local PlayerReplicationInfo Ipri;
 	
 	
-	//only want 2 damage counted if a player did 100 damage to a player with 2 health left
-	local int FixedDamage;
-	local int VictimHealth;
-	local int InstigatorHealth;
-	
-	fixedDamage = ActualDamage;
-
 	if(Victim.PlayerReplicationInfo != None){
 	
 		Vpri = Victim.PlayerReplicationInfo;
@@ -139,37 +131,41 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		
 	}
 	
-	/*InstigatorHealth = InstigatedBy.Health;
-	VictimHealth = Victim.Health;
-	
-	if(ActualDamage > VictimHealth){
-		fixedDamage = VictimHealth;	
-	}*/
-	
-	//some times health is negative
-	if(fixedDamage < 0) fixedDamage = 0;
-	
+
 	if(Vpri != None && Ipri != None){
 	
 		if(Vpri.PlayerID != Ipri.PlayerID){
 		
-			updateDamageDelt(Ipri, fixedDamage, false);
-			updateDamageTaken(Vpri, fixedDamage);
+			if(!bTeamGame){
+			
+				updateDamage(Ipri, "delt", ActualDamage);
+				updateDamage(Vpri, "taken", ActualDamage);
+				
+			}else{
+				
+				if(Vpri.Team == Ipri.Team){
+				
+					updateDamage(Ipri, "teamDelt", ActualDamage);
+					updateDamage(Vpri, "teamTaken", ActualDamage);
+				}else{
+				
+					updateDamage(Ipri, "delt", ActualDamage);
+					updateDamage(Vpri, "taken", ActualDamage);
+				}				
+			}
 			
 		}else{
-			log(Ipri.PlayerName$chr(9)$InstigatedBy.Health$Ipri$chr(9)$fixedDamage);
-			updateDamageDelt(Ipri, fixedDamage, true);
+			updateDamage(Ipri, "self", ActualDamage);
 		}
 	}
 	
 	if(Vpri != None && Ipri == None){
 		
-		updateDamageTaken(Vpri, fixedDamage);
+		updateDamage(Vpri, "taken", ActualDamage);
 	}
 	
 	if(Vpri == None && Ipri != None){
-	
-		updateDamageDelt(Ipri, fixedDamage, false);
+		updateDamage(Ipri, "delt", ActualDamage);
 	}
 
    if (NextDamageMutator != None)
@@ -185,23 +181,13 @@ function bool HandleEndGame(){
 		
 		d = DamageList[i];
 		if(d.PID == -1) break;
-		printLog("sld" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage);
+		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken);
 	}
 	
 	if(NextMutator != None){
 		return NextMutator.HandleEndGame();
 	}
 
-	return false;
-}
-
-
-function bool HandleRestartGame()
-{
-
-	log("#################################################################################asssssssssssssssssssssssssssssss########");
-	if ( NextMutator != None )
-		return NextMutator.HandleRestartGame();
 	return false;
 }
 
