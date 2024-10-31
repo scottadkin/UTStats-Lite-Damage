@@ -132,10 +132,10 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		
 	}
 	
+	FixedDamage = ActualDamage;
+	
 	
 	if(Victim != None){
-	
-		FixedDamage = ActualDamage;
 	
 		if(Victim.Health < ActualDamage){
 			FixedDamage = Victim.Health;
@@ -151,34 +151,34 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		
 			if(!bTeamGame){
 			
-				updateDamage(Ipri, "delt", ActualDamage);
-				updateDamage(Vpri, "taken", ActualDamage);
+				updateDamage(Ipri, "delt", FixedDamage);
+				updateDamage(Vpri, "taken", FixedDamage);
 				
 			}else{
 				
 				if(Vpri.Team == Ipri.Team){
 				
-					updateDamage(Ipri, "teamDelt", ActualDamage);
-					updateDamage(Vpri, "teamTaken", ActualDamage);
+					updateDamage(Ipri, "teamDelt", FixedDamage);
+					updateDamage(Vpri, "teamTaken", FixedDamage);
 				}else{
 				
-					updateDamage(Ipri, "delt", ActualDamage);
-					updateDamage(Vpri, "taken", ActualDamage);
+					updateDamage(Ipri, "delt", FixedDamage);
+					updateDamage(Vpri, "taken", FixedDamage);
 				}				
 			}
 			
 		}else{
-			updateDamage(Ipri, "self", ActualDamage);
+			updateDamage(Ipri, "self", FixedDamage);
 		}
 	}
 	
 	if(Vpri != None && Ipri == None){
 		
-		updateDamage(Vpri, "taken", ActualDamage);
+		updateDamage(Vpri, "taken", FixedDamage);
 	}
 	
 	if(Vpri == None && Ipri != None){
-		updateDamage(Ipri, "delt", ActualDamage);
+		updateDamage(Ipri, "delt", FixedDamage);
 	}
 
    if (NextDamageMutator != None)
