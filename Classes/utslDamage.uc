@@ -42,7 +42,7 @@ function int getPlayerIndexById(int TargetId){
 		
 		if(P.PID == -1){
 			DamageList[i].PID = TargetId;
-			return 1;
+			return i;
 		}
 		if(P.PID == TargetId) return i;
 	}
@@ -116,6 +116,7 @@ function PostBeginPlay(){
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
 	
+	local int FixedDamage;
 	local PlayerReplicationInfo Vpri;
 	local PlayerReplicationInfo Ipri;
 	
@@ -131,7 +132,19 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		
 	}
 	
-
+	
+	if(Victim != None){
+	
+		FixedDamage = ActualDamage;
+	
+		if(Victim.Health < ActualDamage){
+			FixedDamage = Victim.Health;
+		}
+	
+		log(Vpri.PlayerName $chr(9)$ "has" $chr(9)$ Victim.Health $chr(9)$ "took" $chr(9)$ ActualDamage $chr(9)$ "fixed damaged" $chr(9)$ FixedDamage);
+	}
+	
+	
 	if(Vpri != None && Ipri != None){
 	
 		if(Vpri.PlayerID != Ipri.PlayerID){
