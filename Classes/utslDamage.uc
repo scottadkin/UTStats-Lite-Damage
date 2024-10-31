@@ -12,6 +12,8 @@ struct PlayerDamage{
 	var int SelfDamage;
 	var int TeamDamageDelt;
 	var int TeamDamageTaken;
+	var int FallDamage;
+	var int DrownDamage;
 };
 
 var PlayerDamage DamageList[64];
@@ -78,6 +80,12 @@ function updateDamage(PlayerReplicationInfo pInfo, string type, int Damage){
 		case "teamTaken":
 			DamageList[dIndex].TeamDamageTaken += Damage;
 		break;
+		case "fell":
+			DamageList[dIndex].FallDamage += Damage;
+		break;
+		case "drown":
+			DamageList[dIndex].DrownDamage += Damage;
+		break;
 		default:
 			log("Unkown damage type");
 		break;
@@ -113,6 +121,29 @@ function PostBeginPlay(){
 }
 
 
+/*function int GetArmorCount(Pawn TargetPlayer){
+
+	Local inventory Inv;
+	local int ArmorAmount;
+	local int i;
+
+	for( Inv=TargetPlayer.Inventory; Inv!=None; Inv=Inv.Inventory )
+	{ 
+		if (Inv.bIsAnArmor) 
+		{
+			ArmorAmount += Inv.Charge;
+		}
+		else
+		{
+			i++;
+			if ( i > 100 )
+				break; // can occasionally get temporary loops in netplay
+		}
+	}
+	
+	return ArmorAmount;
+}*/
+
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
 	
@@ -121,23 +152,47 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local PlayerReplicationInfo Ipri;
 	
 	
+	FixedDamage = ActualDamage;
+	
+	log("DAMAGE EVENT");
+	
 	if(Victim.PlayerReplicationInfo != None){
 	
 		Vpri = Victim.PlayerReplicationInfo;
 	}
 	
-	if(InstigatedBy.PlayerReplicationInfo != None){
+	if(InstigatedBy != None && InstigatedBy.PlayerReplicationInfo != None){
 	
 		Ipri = InstigatedBy.PlayerReplicationInfo;
 		
 	}
 	
-	FixedDamage = ActualDamage;
+	
+	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn')){
+		
+		log("Damage was done by static pawn");
+		FixedDamage = 0;
+	}
+	
+	
+	if(InstigatedBy == None){
+		
+		if(DamageType == 'Fell'){
+			updateDamage(Vpri, "fell", FixedDamage);
+		}
+		
+		if(DamageType == 'Drowned'){
+			updateDamage(Vpri, "drown", FixedDamage);
+		}
+	}
+	
 	
 	
 	if(Victim != None){
 	
-		if(Victim.Health < ActualDamage){
+		//log("player armor = " $chr(9)$ GetArmorCount(Victim));
+	
+		if(Victim.Health < FixedDamage){
 			FixedDamage = Victim.Health;
 		}
 	
@@ -194,7 +249,7 @@ function bool HandleEndGame(){
 		
 		d = DamageList[i];
 		if(d.PID == -1) break;
-		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken);
+		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken$chr(9)$d.FallDamage$chr(9)$d.DrownDamage);
 	}
 	
 	if(NextMutator != None){
