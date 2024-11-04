@@ -51,7 +51,7 @@ function int getPlayerIndexById(int TargetId){
 }
 
 
-function updateDamage(PlayerReplicationInfo pInfo, string type, int Damage){
+function updateDamage(PlayerReplicationInfo pInfo, name type, int Damage){
 
 	local int dIndex;
 	
@@ -63,28 +63,28 @@ function updateDamage(PlayerReplicationInfo pInfo, string type, int Damage){
 	}
 	
 	switch(type){
-		case "delt": 
+		case 'delt': 
 			DamageList[dIndex].DamageDelt += Damage;
 		 break;
-		case "taken": 
+		case 'taken': 
 			DamageList[dIndex].DamageTaken += Damage;
 		 break;
-		case "self": 
+		case 'self': 
 			DamageList[dIndex].SelfDamage += Damage;
 		break;
-		case "teamDelt":
+		case 'teamDelt':
 			DamageList[dIndex].TeamDamageDelt += Damage;
 		break;
-		case "teamTaken":
+		case 'teamTaken':
 			DamageList[dIndex].TeamDamageTaken += Damage;
 		break;
-		case "fell":
+		case 'fell':
 			DamageList[dIndex].FallDamage += Damage;
 		break;
-		case "drown":
+		case 'drown':
 			DamageList[dIndex].DrownDamage += Damage;
 		break;
-		case "cannon":
+		case 'cannon':
 			DamageList[dIndex].CannonDamage += Damage;
 		break;
 		default:
@@ -148,7 +148,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn') && Vpri != None){
 		
-		updateDamage(Vpri, "cannon", ActualDamage);	
+		updateDamage(Vpri, 'cannon', ActualDamage);	
 		bDamageApplied = true;
 	
 	}
@@ -157,12 +157,12 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	if(InstigatedBy == None && !bDamageApplied){
 		
 		if(DamageType == 'Fell'){
-			updateDamage(Vpri, "fell", ActualDamage);
+			updateDamage(Vpri, 'fell', ActualDamage);
 			bDamageApplied = true;
 		}
 		
 		if(DamageType == 'Drowned'){
-			updateDamage(Vpri, "drown", ActualDamage);
+			updateDamage(Vpri, 'drown', ActualDamage);
 			bDamageApplied = true;
 		}
 	}
@@ -175,29 +175,29 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		if(VPri.PlayerId == Ipri.PlayerID){
 		
 			bDamageApplied = true;	
-			updateDamage(Ipri, "self", ActualDamage);
+			updateDamage(Ipri, 'self', ActualDamage);
 		}
 	
 		if(!bDamageApplied){
 		
 			if(!bTeamGame){
 			
-				updateDamage(Ipri, "delt", ActualDamage);
-				updateDamage(Vpri, "taken", ActualDamage);
+				updateDamage(Ipri, 'delt', ActualDamage);
+				updateDamage(Vpri, 'taken', ActualDamage);
 				bDamageApplied = true;
 				
 			}else{
 				
 				if(Vpri.Team == Ipri.Team){
 				
-					updateDamage(Ipri, "teamDelt", ActualDamage);
-					updateDamage(Vpri, "teamTaken", ActualDamage);
+					updateDamage(Ipri, 'teamDelt', ActualDamage);
+					updateDamage(Vpri, 'teamTaken', ActualDamage);
 					bDamageApplied = true;
 					
 				}else{
 				
-					updateDamage(Ipri, "delt", ActualDamage);
-					updateDamage(Vpri, "taken", ActualDamage);
+					updateDamage(Ipri, 'delt', ActualDamage);
+					updateDamage(Vpri, 'taken', ActualDamage);
 					bDamageApplied = true;
 					
 				}				
@@ -207,12 +207,12 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	if(!bDamageApplied && Vpri != None && Ipri == None){
 		
-		updateDamage(Vpri, "taken", ActualDamage);
+		updateDamage(Vpri, 'taken', ActualDamage);
 		bDamageApplied = true;
 	}
 	
 	if(!bDamageApplied && Vpri == None && Ipri != None){
-		updateDamage(Ipri, "delt", ActualDamage);
+		updateDamage(Ipri, 'delt', ActualDamage);
 		bDamageApplied = true;
 	}
 	
@@ -225,6 +225,7 @@ function bool HandleEndGame(){
 
 	local int i;
 	local PlayerDamage d;
+
 	
 	for(i = 0; i < 255; i++){
 		
