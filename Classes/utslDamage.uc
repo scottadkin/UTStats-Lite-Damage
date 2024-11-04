@@ -37,17 +37,14 @@ event PreBeginPlay()
 function int getPlayerIndexById(int TargetId){
 
 	local int i;
-	local PlayerDamage P;
 	
 	for(i = 0; i < 255; i++){
 	
-		P = DamageList[i];
-		
-		if(P.PID == -1){
+		if(DamageList[i].PID == -1){
 			DamageList[i].PID = TargetId;
 			return i;
 		}
-		if(P.PID == TargetId) return i;
+		if(DamageList[i].PID == TargetId) return i;
 	}
 
 	return -1;
@@ -233,7 +230,6 @@ function bool HandleEndGame(){
 		
 		d = DamageList[i];
 		if(d.PID == -1) break;
-		printLog("d" $chr(9)$ d.PID $chr(9)$ "DamageDelt" $chr(9)$"DamageTaken"$chr(9)$"SelfDamage"$chr(9)$"teamDamageDelt"$chr(9)$"teamDamageTaken"$chr(9)$"FallDamage"$chr(9)$"DrownDamage"$chr(9)$"CannonDamage");
 		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken$chr(9)$d.FallDamage$chr(9)$d.DrownDamage$chr(9)$d.CannonDamage);
 	}
 	
