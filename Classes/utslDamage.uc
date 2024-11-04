@@ -14,9 +14,10 @@ struct PlayerDamage{
 	var int TeamDamageTaken;
 	var int FallDamage;
 	var int DrownDamage;
+	var int CannonDamage;
 };
 
-var PlayerDamage DamageList[64];
+var PlayerDamage DamageList[255];
 
 event PreBeginPlay()
 {
@@ -32,13 +33,13 @@ event PreBeginPlay()
     Level.Game.BaseMutator.AddMutator(self);
 }
 
-//if player id doesnt exist return the index of the next empty DamageList
+//if player id doesnt exist set the playerID and return the index of the next empty DamageList
 function int getPlayerIndexById(int TargetId){
 
 	local int i;
 	local PlayerDamage P;
 	
-	for(i = 0; i < 64; i++){
+	for(i = 0; i < 255; i++){
 	
 		P = DamageList[i];
 		
@@ -86,6 +87,9 @@ function updateDamage(PlayerReplicationInfo pInfo, string type, int Damage){
 		case "drown":
 			DamageList[dIndex].DrownDamage += Damage;
 		break;
+		case "cannon":
+			DamageList[dIndex].CannonDamage += Damage;
+		break;
 		default:
 			log("Unkown damage type");
 		break;
@@ -111,7 +115,7 @@ function PostBeginPlay(){
 	
 	bTeamGame = Level.Game.bTeamGame;
 
-	for(i = 0; i < 64; i++){
+	for(i = 0; i < 255; i++){
 	
 		DamageList[i].PID = -1;
 	}
@@ -121,40 +125,17 @@ function PostBeginPlay(){
 }
 
 
-/*function int GetArmorCount(Pawn TargetPlayer){
-
-	Local inventory Inv;
-	local int ArmorAmount;
-	local int i;
-
-	for( Inv=TargetPlayer.Inventory; Inv!=None; Inv=Inv.Inventory )
-	{ 
-		if (Inv.bIsAnArmor) 
-		{
-			ArmorAmount += Inv.Charge;
-		}
-		else
-		{
-			i++;
-			if ( i > 100 )
-				break; // can occasionally get temporary loops in netplay
-		}
-	}
-	
-	return ArmorAmount;
-}*/
-
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
 	
-	local int FixedDamage;
 	local PlayerReplicationInfo Vpri;
 	local PlayerReplicationInfo Ipri;
+	local bool bDamageApplied;
 	
 	
-	FixedDamage = ActualDamage;
 	
-	log("DAMAGE EVENT");
+	bDamageApplied = false;
+	
 	
 	if(Victim.PlayerReplicationInfo != None){
 	
@@ -168,75 +149,78 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	}
 	
 	
-	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn')){
+	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn') && Vpri != None){
 		
-		log("Damage was done by static pawn");
-		FixedDamage = 0;
+		updateDamage(Vpri, "cannon", ActualDamage);	
+		bDamageApplied = true;
+	
 	}
+
 	
-	
-	if(InstigatedBy == None){
+	if(InstigatedBy == None && !bDamageApplied){
 		
 		if(DamageType == 'Fell'){
-			updateDamage(Vpri, "fell", FixedDamage);
+			updateDamage(Vpri, "fell", ActualDamage);
+			bDamageApplied = true;
 		}
 		
 		if(DamageType == 'Drowned'){
-			updateDamage(Vpri, "drown", FixedDamage);
+			updateDamage(Vpri, "drown", ActualDamage);
+			bDamageApplied = true;
 		}
 	}
 	
+
+	
+	if(Vpri != None && Ipri != None && !bDamageApplied){
 	
 	
-	if(Victim != None){
-	
-		//log("player armor = " $chr(9)$ GetArmorCount(Victim));
-	
-		if(Victim.Health < FixedDamage){
-			FixedDamage = Victim.Health;
+		if(VPri.PlayerId == Ipri.PlayerID){
+		
+			bDamageApplied = true;	
+			updateDamage(Ipri, "self", ActualDamage);
 		}
 	
-		log(Vpri.PlayerName $chr(9)$ "has" $chr(9)$ Victim.Health $chr(9)$ "took" $chr(9)$ ActualDamage $chr(9)$ "fixed damaged" $chr(9)$ FixedDamage);
-	}
-	
-	
-	if(Vpri != None && Ipri != None){
-	
-		if(Vpri.PlayerID != Ipri.PlayerID){
+		if(!bDamageApplied){
 		
 			if(!bTeamGame){
 			
-				updateDamage(Ipri, "delt", FixedDamage);
-				updateDamage(Vpri, "taken", FixedDamage);
+				updateDamage(Ipri, "delt", ActualDamage);
+				updateDamage(Vpri, "taken", ActualDamage);
+				bDamageApplied = true;
 				
 			}else{
 				
 				if(Vpri.Team == Ipri.Team){
 				
-					updateDamage(Ipri, "teamDelt", FixedDamage);
-					updateDamage(Vpri, "teamTaken", FixedDamage);
+					updateDamage(Ipri, "teamDelt", ActualDamage);
+					updateDamage(Vpri, "teamTaken", ActualDamage);
+					bDamageApplied = true;
+					
 				}else{
 				
-					updateDamage(Ipri, "delt", FixedDamage);
-					updateDamage(Vpri, "taken", FixedDamage);
+					updateDamage(Ipri, "delt", ActualDamage);
+					updateDamage(Vpri, "taken", ActualDamage);
+					bDamageApplied = true;
+					
 				}				
-			}
-			
-		}else{
-			updateDamage(Ipri, "self", FixedDamage);
+			}	
 		}
 	}
 	
-	if(Vpri != None && Ipri == None){
+	if(!bDamageApplied && Vpri != None && Ipri == None){
 		
-		updateDamage(Vpri, "taken", FixedDamage);
+		updateDamage(Vpri, "taken", ActualDamage);
+		bDamageApplied = true;
 	}
 	
-	if(Vpri == None && Ipri != None){
-		updateDamage(Ipri, "delt", FixedDamage);
+	if(!bDamageApplied && Vpri == None && Ipri != None){
+		updateDamage(Ipri, "delt", ActualDamage);
+		bDamageApplied = true;
 	}
+	
 
-   if (NextDamageMutator != None)
+   	if (NextDamageMutator != None)
         NextDamageMutator.MutatorTakeDamage(ActualDamage,Victim,InstigatedBy,HitLocation,Momentum,DamageType);
 }
 
@@ -245,11 +229,12 @@ function bool HandleEndGame(){
 	local int i;
 	local PlayerDamage d;
 	
-	for(i = 0; i < 64; i++){
+	for(i = 0; i < 255; i++){
 		
 		d = DamageList[i];
 		if(d.PID == -1) break;
-		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken$chr(9)$d.FallDamage$chr(9)$d.DrownDamage);
+		printLog("d" $chr(9)$ d.PID $chr(9)$ "DamageDelt" $chr(9)$"DamageTaken"$chr(9)$"SelfDamage"$chr(9)$"teamDamageDelt"$chr(9)$"teamDamageTaken"$chr(9)$"FallDamage"$chr(9)$"DrownDamage"$chr(9)$"CannonDamage");
+		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken$chr(9)$d.FallDamage$chr(9)$d.DrownDamage$chr(9)$d.CannonDamage);
 	}
 	
 	if(NextMutator != None){
