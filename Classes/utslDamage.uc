@@ -147,13 +147,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	
 	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
-	
-		log("More damage was done then the player had health"$chr(9)$Victim.Health$chr(9)$" -> " $FixedDamage);
-		
 		FixedDamage = Victim.Health;
-	
-	}else if(bIncludeAllDamageDone){
-		log("BIncludeAllDamageDone is True");
 	}
 	
 	
