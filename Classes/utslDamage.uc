@@ -1,8 +1,10 @@
 //=============================================================================
 // utslDamage.
 //=============================================================================
-class utslDamage expands Mutator;
+class utslDamage expands Mutator config(UTStatsLiteDamage);
 
+//if set to false when dealing 100 damage to a player with 2 health, the damage is counted as 2 rather than 100
+var config bool bIncludeAllDamageDone;
 var bool bTeamGame;
 
 struct PlayerDamage{
@@ -128,8 +130,34 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local PlayerReplicationInfo Vpri;
 	local PlayerReplicationInfo Ipri;
 	local bool bDamageApplied;
+	local int FixedDamage;
+	local DamageTracker DT;
 	
 	
+	FixedDamage = ActualDamage;
+	
+	DT = FindTracker(Victim);
+	
+	if (DT != none){
+		FixedDamage = DT.LastDamage;
+		
+	}else{
+		log("TRACKER IS NONE, fallingback to ActualDamage");
+	}
+	
+	
+	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
+	
+		log("More damage was done then the player had health"$chr(9)$Victim.Health$chr(9)$" -> " $FixedDamage);
+		
+		FixedDamage = Victim.Health;
+	
+	}else if(bIncludeAllDamageDone){
+		log("BIncludeAllDamageDone is True");
+	}
+	
+	
+
 	
 	bDamageApplied = false;
 	
@@ -148,7 +176,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn') && Vpri != None){
 		
-		updateDamage(Vpri, 'cannon', ActualDamage);	
+		updateDamage(Vpri, 'cannon', FixedDamage);	
 		bDamageApplied = true;
 	
 	}
@@ -157,12 +185,12 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	if(InstigatedBy == None && !bDamageApplied){
 		
 		if(DamageType == 'Fell'){
-			updateDamage(Vpri, 'fell', ActualDamage);
+			updateDamage(Vpri, 'fell', FixedDamage);
 			bDamageApplied = true;
 		}
 		
 		if(DamageType == 'Drowned'){
-			updateDamage(Vpri, 'drown', ActualDamage);
+			updateDamage(Vpri, 'drown', FixedDamage);
 			bDamageApplied = true;
 		}
 	}
@@ -175,29 +203,29 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		if(VPri.PlayerId == Ipri.PlayerID){
 		
 			bDamageApplied = true;	
-			updateDamage(Ipri, 'self', ActualDamage);
+			updateDamage(Ipri, 'self', FixedDamage);
 		}
 	
 		if(!bDamageApplied){
 		
 			if(!bTeamGame){
 			
-				updateDamage(Ipri, 'delt', ActualDamage);
-				updateDamage(Vpri, 'taken', ActualDamage);
+				updateDamage(Ipri, 'delt', FixedDamage);
+				updateDamage(Vpri, 'taken', FixedDamage);
 				bDamageApplied = true;
 				
 			}else{
 				
 				if(Vpri.Team == Ipri.Team){
 				
-					updateDamage(Ipri, 'teamDelt', ActualDamage);
-					updateDamage(Vpri, 'teamTaken', ActualDamage);
+					updateDamage(Ipri, 'teamDelt', FixedDamage);
+					updateDamage(Vpri, 'teamTaken', FixedDamage);
 					bDamageApplied = true;
 					
 				}else{
 				
-					updateDamage(Ipri, 'delt', ActualDamage);
-					updateDamage(Vpri, 'taken', ActualDamage);
+					updateDamage(Ipri, 'delt', FixedDamage);
+					updateDamage(Vpri, 'taken', FixedDamage);
 					bDamageApplied = true;
 					
 				}				
@@ -207,12 +235,12 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	if(!bDamageApplied && Vpri != None && Ipri == None){
 		
-		updateDamage(Vpri, 'taken', ActualDamage);
+		updateDamage(Vpri, 'taken', FixedDamage);
 		bDamageApplied = true;
 	}
 	
 	if(!bDamageApplied && Vpri == None && Ipri != None){
-		updateDamage(Ipri, 'delt', ActualDamage);
+		updateDamage(Ipri, 'delt', FixedDamage);
 		bDamageApplied = true;
 	}
 	
@@ -241,6 +269,33 @@ function bool HandleEndGame(){
 	return false;
 }
 
+
+//below taken from Deaod's method https://github.com/Deaod/InstaGibPlus/blob/master/Classes/IGPlus_HitFeedback.uc
+
+function DamageTracker FindTracker(Pawn P) {
+	local Inventory I;
+
+	for (I = P.Inventory; I != none; I = I.Inventory)
+		if (I.IsA('DamageTracker'))
+			return DamageTracker(I);
+
+	return none;
+}
+
+function CreateTracker(Pawn P) {
+	local DamageTracker T;
+	T = Spawn(class'DamageTracker');
+	T.GiveTo(P);
+}
+
+function ModifyPlayer(Pawn P) {
+	super.ModifyPlayer(P);
+
+	if (FindTracker(P) == none)
+		CreateTracker(P);
+}
+
 defaultproperties
 {
+	bIncludeAllDamageDone=True
 }
