@@ -133,7 +133,6 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local int FixedDamage;
 	local DamageTracker DT;
 	
-	
 	FixedDamage = ActualDamage;
 	
 	DT = FindTracker(Victim);
@@ -150,11 +149,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		FixedDamage = Victim.Health;
 	}
 	
-	
-
-	
 	bDamageApplied = false;
-	
 	
 	if(Victim.PlayerReplicationInfo != None){
 	
