@@ -16,4 +16,5 @@
  Add the following lines to your UnrealTournament.ini file in the section labeled **Engine.GameEngine**:
 ``` 
 ServerPackages=UTStatsLiteDamage
-ServerActors=UTStatsLiteDamage.utslDamage```
+ServerActors=UTStatsLiteDamage.utslDamage
+```
