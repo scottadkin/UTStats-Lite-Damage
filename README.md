@@ -18,3 +18,5 @@
 ServerPackages=UTStatsLiteDamage
 ServerActors=UTStatsLiteDamage.utslDamage
 ```
+
+# Thanks to Deaod For Armor Fix Method & Feedback/Pointers.
