@@ -9,7 +9,6 @@ var bool bTeamGame;
 
 
 struct PlayerWeaponDamage{
-	var int PID;
 	var string WeaponName;
 	var int DamageDelt;
 };
@@ -24,11 +23,11 @@ struct PlayerDamage{
 	var int FallDamage;
 	var int DrownDamage;
 	var int CannonDamage;
-	//var PlayerWeaponDamage WeaponDamage[32];
+	var PlayerWeaponDamage WeaponDamage[32];
 };
 
 var PlayerDamage DamageList[255];
-var PlayerWeaponDamage PlayerWeaponDamageList[2048];
+//var PlayerWeaponDamage PlayerWeaponDamageList[2048];
 
 
 event PreBeginPlay()
@@ -129,33 +128,28 @@ function PostBeginPlay(){
 		DamageList[i].PID = -1;
 	}
 	
-	for(i = 0; i < 2048; i++){
-	
-		PlayerWeaponDamageList[i].PID = -1;
-	}
-	
+
 	Level.Game.RegisterDamageMutator(self);
 	
 }
 
 
-function int GetPlayerWeaponDamageIndex(int PID, string WeaponName){
+
+function int getPlayerWeaponIndex(int PlayerIndex, string WeaponName){
 
 	local int i;
 	
-
-	for(i = 0; i < 2048; i++){
 	
-		if(PlayerWeaponDamageList[i].PID == PID && PlayerWeaponDamageList[i].WeaponName == WeaponName){
+	for(i = 0; i < 32; i++){
+		
+		if(DamageList[PlayerIndex].WeaponDamage[i].WeaponName == WeaponName){
 		
 			return i;
-		}
-			
-		if(PlayerWeaponDamageList[i].PID == -1){
 		
-			PlayerWeaponDamageList[i].PID = PID;
-			PlayerWeaponDamageList[i].WeaponName = WeaponName;
-			
+		}
+		
+		if(DamageList[PlayerIndex].WeaponDamage[i].WeaponName == ""){
+			DamageList[PlayerIndex].WeaponDamage[i].WeaponName = WeaponName;
 			return i;
 		}
 	}
@@ -165,20 +159,26 @@ function int GetPlayerWeaponDamageIndex(int PID, string WeaponName){
 
 function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, int Damage){
 
-
-	local int DataIndex;
+	local int WeaponIndex;
+	local int PlayerIndex;
 	
-
+	PlayerIndex = getPlayerIndexById(PRI.PlayerId);
 	
-	DataIndex = GetPlayerWeaponDamageIndex(PRI.PlayerID, WeaponName);
+	if(PlayerIndex == -1){
 	
-	if(DataIndex == -1){
-		log("Failed to find data index");
+		log("failed to find player index");
+		return;
+	}		
+		
+	WeaponIndex = getPlayerWeaponIndex(PlayerIndex, WeaponName);
+	
+	if(WeaponIndex == -1){
+		log("Failed to get player's weapon index");
 		return;
 	}
 	
-	PlayerWeaponDamageList[DataIndex].DamageDelt += Damage;
-	//log(PlayerWeaponDamageList[DataIndex].DamageDelt);
+	DamageList[PlayerIndex].WeaponDamage[WeaponIndex].DamageDelt += Damage;
+			
 }
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
@@ -308,17 +308,26 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 function bool HandleEndGame(){
 
 	local int i;
-	local PlayerDamage d;
-	local PlayerWeaponDamage WD;
+	local PlayerDamage D;
+	local int x;
 	
 	for(i = 0; i < 255; i++){
 		
-		d = DamageList[i];
+		D = DamageList[i];
 		if(d.PID == -1) break;
-		printLog("d" $chr(9)$ d.PID $chr(9)$ d.DamageDelt $chr(9)$d.DamageTaken$chr(9)$d.SelfDamage$chr(9)$d.teamDamageDelt$chr(9)$d.teamDamageTaken$chr(9)$d.FallDamage$chr(9)$d.DrownDamage$chr(9)$d.CannonDamage);
+		printLog("d" $chr(9)$ D.PID $chr(9)$ D.DamageDelt $chr(9)$D.DamageTaken$chr(9)$D.SelfDamage$chr(9)$D.teamDamageDelt$chr(9)$D.teamDamageTaken$chr(9)$D.FallDamage$chr(9)$D.DrownDamage$chr(9)$D.CannonDamage);
+		
+		for(x = 0; x < 32; x++){
+		
+			if(D.WeaponDamage[x].WeaponName == ""){
+				break;
+			}
+			
+			printLog("wd"$chr(9)$D.PID$chr(9)$D.WeaponDamage[x].WeaponName$chr(9)$D.WeaponDamage[x].DamageDelt);
+		}
 	}
 	
-	for(i = 0; i < 2048; i++){
+	/*for(i = 0; i < 2048; i++){
 	
 		WD = PlayerWeaponDamageList[i];
 		if(WD.PID == -1){
@@ -326,7 +335,7 @@ function bool HandleEndGame(){
 		}
 		
 		printLog("wd" $chr(9)$ WD.PID $chr(9)$ WD.WeaponName $chr(9)$WD.DamageDelt);
-	}
+	}*/
 	
 	if(NextMutator != None){
 		return NextMutator.HandleEndGame();
