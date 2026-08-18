@@ -7,6 +7,7 @@ class utslDamage expands Mutator config(UTStatsLiteDamage);
 var config bool bIncludeAllDamageDone;
 var bool bTeamGame;
 
+
 struct PlayerWeaponDamage{
 	var int PID;
 	var name WeaponClass;
@@ -25,8 +26,6 @@ struct PlayerDamage{
 	var int CannonDamage;
 	//var PlayerWeaponDamage WeaponDamage[32];
 };
-
-
 
 var PlayerDamage DamageList[255];
 var PlayerWeaponDamage PlayerWeaponDamageList[2048];
@@ -206,11 +205,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
 		FixedDamage = Victim.Health;
 	}
-	
-	
-	
 
-	
 	bDamageApplied = false;
 	
 	
@@ -223,10 +218,9 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 		Ipri = InstigatedBy.PlayerReplicationInfo;
 		
-		log("InstigatedBy weapon is "$chr(9)$ InstigatedBy.Weapon.ItemName);
-		log("InstigatedBy weapon is className is "$chr(9)$ InstigatedBy.Weapon.Class.Name);
-		
-		UpdatePlayerWeaponStats(Ipri ,InstigatedBy.Weapon.Class.Name, FixedDamage);
+		if(Victim != None && Vpri != None && Vpri.PlayerID != Ipri.PlayerID){		
+			UpdatePlayerWeaponStats(Ipri ,InstigatedBy.Weapon.Class.Name, FixedDamage);
+		}
 	}
 	
 	
