@@ -10,7 +10,7 @@ var bool bTeamGame;
 
 struct PlayerWeaponDamage{
 	var int PID;
-	var name WeaponClass;
+	var string WeaponName;
 	var int DamageDelt;
 };
 
@@ -139,14 +139,14 @@ function PostBeginPlay(){
 }
 
 
-function int GetPlayerWeaponDamageIndex(int PID, name WeaponClass){
+function int GetPlayerWeaponDamageIndex(int PID, string WeaponName){
 
 	local int i;
 	
 
 	for(i = 0; i < 2048; i++){
 	
-		if(PlayerWeaponDamageList[i].PID == PID && PlayerWeaponDamageList[i].WeaponClass == WeaponClass){
+		if(PlayerWeaponDamageList[i].PID == PID && PlayerWeaponDamageList[i].WeaponName == WeaponName){
 		
 			return i;
 		}
@@ -154,7 +154,7 @@ function int GetPlayerWeaponDamageIndex(int PID, name WeaponClass){
 		if(PlayerWeaponDamageList[i].PID == -1){
 		
 			PlayerWeaponDamageList[i].PID = PID;
-			PlayerWeaponDamageList[i].WeaponClass = WeaponClass;
+			PlayerWeaponDamageList[i].WeaponName = WeaponName;
 			
 			return i;
 		}
@@ -163,14 +163,14 @@ function int GetPlayerWeaponDamageIndex(int PID, name WeaponClass){
 	return -1;
 }
 
-function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, name WeaponClass, int Damage){
+function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, int Damage){
 
 
 	local int DataIndex;
 	
 
 	
-	DataIndex = GetPlayerWeaponDamageIndex(PRI.PlayerID, WeaponClass);
+	DataIndex = GetPlayerWeaponDamageIndex(PRI.PlayerID, WeaponName);
 	
 	if(DataIndex == -1){
 		log("Failed to find data index");
@@ -178,7 +178,7 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, name WeaponClass, in
 	}
 	
 	PlayerWeaponDamageList[DataIndex].DamageDelt += Damage;
-	log(PlayerWeaponDamageList[DataIndex].DamageDelt);
+	//log(PlayerWeaponDamageList[DataIndex].DamageDelt);
 }
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
@@ -188,7 +188,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local bool bDamageApplied;
 	local int FixedDamage;
 	local DamageTracker DT;
-	local name InstigatedByWeaponName;
+	local string InstigatedByWeaponName;
 	
 	
 	FixedDamage = ActualDamage;
@@ -222,7 +222,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		if(Victim != None && Vpri != None && Vpri.PlayerID != Ipri.PlayerID){		
 		
 			if(InstigatedBy.Weapon != None){
-				InstigatedByWeaponName = InstigatedBy.Weapon.Class.Name;
+				InstigatedByWeaponName = InstigatedBy.Weapon.ItemName;
 			}
 		
 			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, FixedDamage);
@@ -325,7 +325,7 @@ function bool HandleEndGame(){
 			break;		
 		}
 		
-		printLog("wd" $chr(9)$ WD.PID $chr(9)$ WD.WeaponClass $chr(9)$WD.DamageDelt);
+		printLog("wd" $chr(9)$ WD.PID $chr(9)$ WD.WeaponName $chr(9)$WD.DamageDelt);
 	}
 	
 	if(NextMutator != None){
