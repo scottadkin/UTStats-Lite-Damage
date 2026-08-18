@@ -188,6 +188,7 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local bool bDamageApplied;
 	local int FixedDamage;
 	local DamageTracker DT;
+	local name InstigatedByWeaponName;
 	
 	
 	FixedDamage = ActualDamage;
@@ -219,7 +220,12 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		Ipri = InstigatedBy.PlayerReplicationInfo;
 		
 		if(Victim != None && Vpri != None && Vpri.PlayerID != Ipri.PlayerID){		
-			UpdatePlayerWeaponStats(Ipri ,InstigatedBy.Weapon.Class.Name, FixedDamage);
+		
+			if(InstigatedBy.Weapon != None){
+				InstigatedByWeaponName = InstigatedBy.Weapon.Class.Name;
+			}
+		
+			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, FixedDamage);
 		}
 	}
 	
