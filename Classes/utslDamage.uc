@@ -8,52 +8,64 @@ var config bool bIncludeAllDamageDone;
 var bool bTeamGame;
 
 
+
+var config string ImpactHammerName;
 //impact for both
 var config name ImpactHammerDamageType;
 var config name ImpactHammerAltDamageType;
 
+var config string EnforcerName;
 //shot for both
 var config name EnforcerDamageType;
 var config name EnforcerAltDamageType;
 
+var config string BioRifleName;
 //Corroded for both
 var config name BioRifleDamageType;
 var config name BioRifleAltDamageType;
 
+var config string ShockRifleName;
 //jolted for both
 var config name ShockRifleDamageType;
 var config name ShockRifleAltDamageType;
 
+var config string PulseRifleName;
 //Pulsed
 var config name PulseRifleDamageType;
 //zapped
 var config name PulseRifleAltDamageType;
 
+var config string RipperName;
 //shredded
 var config name RazorDamageType;
 //RipperAltDeath
 var config name RazorAltDamageType;
 
 
+var config string MinigunName;
 //shot
 var config name MinigunDamageType;
 var config name MinigunAltDamageType;
 
+var config string FlakCannonName;
 //shredded
 var config name FlakCannonDamageType;
 //FlakDeath
 var config name FlakCannonAltDamageType;
 
 
+var config string RocketLauncherName;
 //RocketDeath
 var config name RocketLauncherDamageType;
 //GrenadeDeath
 var config name RocketLauncherAltDamageType;
 
+var config string SniperRifleName;
 //shot
 var config name SniperRifleDamageType;
 var config name SNiperRifleAltDamageType;
 
+var config string RedeemerName;
 //RedeemerDeath
 var config name RedeemerDamageType;
 var config name RedeemerAltDamageType;
@@ -229,7 +241,7 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 
     log(DamageType $chr(9)$WeaponName$chr(9)$RocketLauncherDamageType);
 
-    if((DamageType == RocketLauncherDamageType || DamageType == RocketLauncherAltDamageType) && WeaponName != "Rocket Launcher"){
+    if((DamageType == RocketLauncherDamageType || DamageType == RocketLauncherAltDamageType) && WeaponName != RocketLauncherName){
 
         log("rocket launcher damage type, but player not holding rocket launcher"$chr(9)$weaponName);
 
