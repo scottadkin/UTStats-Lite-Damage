@@ -63,7 +63,7 @@ var config name RocketLauncherAltDamageType;
 var config string SniperRifleName;
 //shot
 var config name SniperRifleDamageType;
-var config name SNiperRifleAltDamageType;
+var config name SniperRifleAltDamageType;
 
 var config string RedeemerName;
 //RedeemerDeath
@@ -245,7 +245,19 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 
         log("rocket launcher damage type, but player not holding rocket launcher"$chr(9)$weaponName);
 
+        WeaponName = RocketLauncherName;
+
+    }else if((DamageType == PulseRifleDamageType || DamageType == PulseRifleAltDamageType) && WeaponName != PulseRifleName){
+
+        log("pulse damage but player not holding pulse rifle");
+        WeaponName = PulseRifleName;
+
+    }else if((DamageType == BioRifleDamageType || DamageType == BioRifleAltDamageType) && WeaponName != BioRifleName){
+
+        log("bio damage but player not holding bio");
+        WeaponName = BioRifleName;
     }
+
 		
 	WeaponIndex = getPlayerWeaponIndex(PlayerIndex, WeaponName);
 	
