@@ -8,6 +8,36 @@ var config bool bIncludeAllDamageDone;
 var bool bTeamGame;
 
 
+
+//Pulsed
+var config name PulseProjectileDamageType;
+//zapped
+var config name PulseBeamnDamageType;
+
+//shredded
+var config name RazorPrimaryDamageType;
+//RipperAltDeath
+var config name RazorAltDamageType;
+
+//FlakDeath
+var config name FlakShellDamageType;
+
+//shredded
+var config name FlakPrimaryDamageType;
+
+//Corroded
+var config name BioRifleDamageType;
+
+
+//GrenadeDeath
+var config name RocketGrenadeDamageType;
+
+//RocketDeath
+var config name RocketLauncherDamageType;
+
+//jolted
+var config name ShockRifleDamageType;
+
 struct PlayerWeaponDamage{
 	var string WeaponName;
 	var int DamageDelt;
