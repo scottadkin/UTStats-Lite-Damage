@@ -38,6 +38,9 @@ var config name RocketLauncherDamageType;
 //jolted
 var config name ShockRifleDamageType;
 
+//RedeemerDeath
+var config name RedeemerDamageType;
+
 struct PlayerWeaponDamage{
 	var string WeaponName;
 	var int DamageDelt;
