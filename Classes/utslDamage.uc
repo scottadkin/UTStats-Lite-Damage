@@ -213,7 +213,7 @@ function int getPlayerWeaponIndex(int PlayerIndex, string WeaponName){
 	return -1;
 }
 
-function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, int Damage){
+function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, int Damage, name DamageType){
 
 	local int WeaponIndex;
 	local int PlayerIndex;
@@ -225,6 +225,15 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 		log("failed to find player index");
 		return;
 	}		
+
+
+    log(DamageType $chr(9)$WeaponName$chr(9)$RocketLauncherDamageType);
+
+    if((DamageType == RocketLauncherDamageType || DamageType == RocketLauncherAltDamageType) && WeaponName != "Rocket Launcher"){
+
+        log("rocket launcher damage type, but player not holding rocket launcher"$chr(9)$weaponName);
+
+    }
 		
 	WeaponIndex = getPlayerWeaponIndex(PlayerIndex, WeaponName);
 	
@@ -261,7 +270,7 @@ function updateStats(Pawn Victim, Pawn InstigatedBy, name DamageType, int Damage
 				InstigatedByWeaponName = InstigatedBy.Weapon.ItemName;
 			}
 		
-			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone);
+			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone, DamageType);
 		}
 	}
 	
