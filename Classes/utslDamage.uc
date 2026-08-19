@@ -181,16 +181,14 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 			
 }
 
-function updateStats(Pawn Victim, Pawn InstigatedBy, DamageTracker DT, name DamageType, int DamageDone){
+function updateStats(Pawn Victim, Pawn InstigatedBy, name DamageType, int DamageDone){
 
 	local PlayerReplicationInfo VPRI;
 	local PlayerReplicationInfo IPRI;
 
-	local bool bDamageApplied;
 	local string InstigatedByWeaponName;
 
-	bDamageApplied = false;
-	
+
 	
 	if(Victim.PlayerReplicationInfo != None){
 	
@@ -240,8 +238,8 @@ function updateStats(Pawn Victim, Pawn InstigatedBy, DamageTracker DT, name Dama
 	
 		if(VPri.PlayerId == Ipri.PlayerID){
 		
-			bDamageApplied = true;	
 			updateDamage(Ipri, 'self', DamageDone);
+			return;
 		}
 	
 
@@ -302,13 +300,11 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	
 	
 	
-	
-	
 	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
 		FixedDamage = Victim.Health;
 	}
 	
-	updateStats(Victim, InstigatedBy, DT, DamageType, fixedDamage);
+	updateStats(Victim, InstigatedBy, DamageType, fixedDamage);
 
 	
 
@@ -338,15 +334,6 @@ function bool HandleEndGame(){
 		}
 	}
 	
-	/*for(i = 0; i < 2048; i++){
-	
-		WD = PlayerWeaponDamageList[i];
-		if(WD.PID == -1){
-			break;		
-		}
-		
-		printLog("wd" $chr(9)$ WD.PID $chr(9)$ WD.WeaponName $chr(9)$WD.DamageDelt);
-	}*/
 	
 	if(NextMutator != None){
 		return NextMutator.HandleEndGame();
