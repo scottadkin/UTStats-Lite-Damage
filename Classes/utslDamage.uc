@@ -8,38 +8,61 @@ var config bool bIncludeAllDamageDone;
 var bool bTeamGame;
 
 
+//impact for both
+var config name ImpactHammerDamageType;
+var config name ImpactHammerAltDamageType;
+
+//shot for both
+var config name EnforcerDamageType;
+var config name EnforcerAltDamageType;
+
+//Corroded for both
+var config name BioRifleDamageType;
+var config name BioRifleAltDamageType;
+
+//jolted for both
+var config name ShockRifleDamageType;
+var config name ShockRifleAltDamageType;
 
 //Pulsed
-var config name PulseProjectileDamageType;
+var config name PulseRifleDamageType;
 //zapped
-var config name PulseBeamnDamageType;
+var config name PulseRifleAltDamageType;
 
 //shredded
-var config name RazorPrimaryDamageType;
+var config name RazorDamageType;
 //RipperAltDeath
 var config name RazorAltDamageType;
 
-//FlakDeath
-var config name FlakShellDamageType;
+
+//shot
+var config name MinigunDamageType;
+var config name MinigunAltDamageType;
 
 //shredded
-var config name FlakPrimaryDamageType;
+var config name FlakCannonDamageType;
+//FlakDeath
+var config name FlakCannonAltDamageType;
 
-//Corroded
-var config name BioRifleDamageType;
-
-
-//GrenadeDeath
-var config name RocketGrenadeDamageType;
 
 //RocketDeath
 var config name RocketLauncherDamageType;
+//GrenadeDeath
+var config name RocketLauncherAltDamageType;
 
-//jolted
-var config name ShockRifleDamageType;
+//shot
+var config name SniperRifleDamageType;
+var config name SNiperRifleAltDamageType;
 
 //RedeemerDeath
 var config name RedeemerDamageType;
+var config name RedeemerAltDamageType;
+
+
+var config name DecapitatedDamageType;
+
+
+//also need to add Decapitated to each weapon...
 
 struct PlayerWeaponDamage{
 	var string WeaponName;
