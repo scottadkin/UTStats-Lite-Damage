@@ -181,31 +181,13 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 			
 }
 
-function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
-	
-	local PlayerReplicationInfo Vpri;
-	local PlayerReplicationInfo Ipri;
+function updateStats(Pawn Victim, Pawn InstigatedBy, DamageTracker DT, name DamageType, int DamageDone){
+
+	local PlayerReplicationInfo VPRI;
+	local PlayerReplicationInfo IPRI;
+
 	local bool bDamageApplied;
-	local int FixedDamage;
-	local DamageTracker DT;
 	local string InstigatedByWeaponName;
-	
-	
-	FixedDamage = ActualDamage;
-	
-	DT = FindTracker(Victim);
-	
-	if (DT != none){
-		FixedDamage = DT.LastDamage;
-		
-	}else{
-		log("TRACKER IS NONE, fallingback to ActualDamage");
-	}
-	
-	
-	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
-		FixedDamage = Victim.Health;
-	}
 
 	bDamageApplied = false;
 	
@@ -225,80 +207,109 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 				InstigatedByWeaponName = InstigatedBy.Weapon.ItemName;
 			}
 		
-			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, FixedDamage);
+			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone);
 		}
 	}
 	
 	
 	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn') && Vpri != None){
 		
-		updateDamage(Vpri, 'cannon', FixedDamage);	
-		bDamageApplied = true;
+		updateDamage(Vpri, 'cannon', DamageDone);	
+		return;
 	
 	}
 
 	
-	if(InstigatedBy == None && !bDamageApplied){
+	if(InstigatedBy == None){
 		
 		if(DamageType == 'Fell'){
-			updateDamage(Vpri, 'fell', FixedDamage);
-			bDamageApplied = true;
+			updateDamage(Vpri, 'fell', DamageDone);
+			return;
 		}
 		
 		if(DamageType == 'Drowned'){
-			updateDamage(Vpri, 'drown', FixedDamage);
-			bDamageApplied = true;
+			updateDamage(Vpri, 'drown', DamageDone);
+			return;
 		}
 	}
 	
 
 	
-	if(Vpri != None && Ipri != None && !bDamageApplied){
+	if(Vpri != None && Ipri != None){
 	
 	
 		if(VPri.PlayerId == Ipri.PlayerID){
 		
 			bDamageApplied = true;	
-			updateDamage(Ipri, 'self', FixedDamage);
+			updateDamage(Ipri, 'self', DamageDone);
 		}
 	
-		if(!bDamageApplied){
+
 		
-			if(!bTeamGame){
+		if(!bTeamGame){
+		
+			updateDamage(Ipri, 'delt', DamageDone);
+			updateDamage(Vpri, 'taken', DamageDone);
+			return;
 			
-				updateDamage(Ipri, 'delt', FixedDamage);
-				updateDamage(Vpri, 'taken', FixedDamage);
-				bDamageApplied = true;
+		}else{
+			
+			if(Vpri.Team == Ipri.Team){
+			
+				updateDamage(Ipri, 'teamDelt', DamageDone);
+				updateDamage(Vpri, 'teamTaken', DamageDone);
+				return;
 				
 			}else{
+			
+				updateDamage(Ipri, 'delt', DamageDone);
+				updateDamage(Vpri, 'taken', DamageDone);
+				return;
 				
-				if(Vpri.Team == Ipri.Team){
-				
-					updateDamage(Ipri, 'teamDelt', FixedDamage);
-					updateDamage(Vpri, 'teamTaken', FixedDamage);
-					bDamageApplied = true;
-					
-				}else{
-				
-					updateDamage(Ipri, 'delt', FixedDamage);
-					updateDamage(Vpri, 'taken', FixedDamage);
-					bDamageApplied = true;
-					
-				}				
-			}	
-		}
+			}				
+		}		
 	}
 	
-	if(!bDamageApplied && Vpri != None && Ipri == None){
+	if(Vpri != None && Ipri == None){
 		
-		updateDamage(Vpri, 'taken', FixedDamage);
-		bDamageApplied = true;
+		updateDamage(Vpri, 'taken', DamageDone);
+		return;
 	}
 	
-	if(!bDamageApplied && Vpri == None && Ipri != None){
-		updateDamage(Ipri, 'delt', FixedDamage);
-		bDamageApplied = true;
+	if(Vpri == None && Ipri != None){
+		updateDamage(Ipri, 'delt', DamageDone);
+		return;
 	}
+
+}
+
+function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, out Vector Momentum, name DamageType){
+	
+	local int FixedDamage;
+	local DamageTracker DT;
+	
+	
+	FixedDamage = ActualDamage;
+	
+	DT = FindTracker(Victim);
+	
+	if (DT != none){
+		FixedDamage = DT.LastDamage;
+		
+	}else{
+		log("TRACKER IS NONE, fallingback to ActualDamage");
+	}
+	
+	
+	
+	
+	
+	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
+		FixedDamage = Victim.Health;
+	}
+	
+	updateStats(Victim, InstigatedBy, DT, DamageType, fixedDamage);
+
 	
 
    	if (NextDamageMutator != None)
