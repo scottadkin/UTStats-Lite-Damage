@@ -40,6 +40,7 @@ var config string RipperName;
 var config name RipperDamageType;
 //RipperAltDeath
 var config name RipperAltDamageType;
+var config bool bCheckBothRipperDamageTypes;
 
 
 var config string MinigunName;
@@ -52,6 +53,7 @@ var config string FlakCannonName;
 var config name FlakCannonDamageType;
 //FlakDeath
 var config name FlakCannonAltDamageType;
+var config bool bCheckBothFlakCannonDamageTypes;
 
 
 var config string RocketLauncherName;
@@ -277,6 +279,15 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
         log("Redeemer damage but player not holding redeemer");
         WeaponName = RedeemerName;
 
+    }else if(bCheckBothRipperDamageTypes && DamageType == RipperAltDamageType && WeaponName != RipperName){
+
+        log("bCheckBothRipperDamage type override");
+        WeaponName = RipperName;
+
+    }else if(bCheckBothFlakCannonDamageTypes && DamageType == FlakCannonAltDamageType && WeaponName != FlakCannonName){
+
+        log("bCheckBothFlakDamage type override");
+        WeaponName = FlakCannonName;
     }
 
 		
