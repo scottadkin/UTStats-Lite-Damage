@@ -37,9 +37,9 @@ var config name PulseRifleAltDamageType;
 
 var config string RipperName;
 //shredded
-var config name RazorDamageType;
+var config name RipperDamageType;
 //RipperAltDeath
-var config name RazorAltDamageType;
+var config name RipperAltDamageType;
 
 
 var config string MinigunName;
@@ -256,6 +256,27 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 
         log("bio damage but player not holding bio");
         WeaponName = BioRifleName;
+
+    }else if((DamageType == ShockRifleDamageType || DamageType == ShockRifleAltDamageType) && WeaponName != ShockRifleName){
+
+        log("shockrifle damage but player not holding shockrifle");
+        WeaponName = ShockRifleName;
+
+    }else if(DamageType == RipperAltDamageType && WeaponName != RipperName){
+
+        log("ripper damage but player not holding ripper");
+        WeaponName = RipperName;
+
+    }else if(DamageType == FlakCannonAltDamageType && WeaponName != FlakCannonName){
+
+        log("flak cannon damage but player not holding flak cannon");
+        WeaponName = FlakCannonName;
+
+    }else if((DamageType == RedeemerDamageType || DamageType == RedeemerAltDamageType) && WeaponName != RedeemerName){
+
+        log("Redeemer damage but player not holding redeemer");
+        WeaponName = RedeemerName;
+
     }
 
 		
