@@ -7,8 +7,6 @@ class utslDamage expands Mutator config(UTStatsLiteDamage);
 var config bool bIncludeAllDamageDone;
 var bool bTeamGame;
 
-
-
 var config string ImpactHammerName;
 //impact for both
 var config name ImpactHammerDamageType;
@@ -76,6 +74,7 @@ var config name RedeemerAltDamageType;
 var config name DecapitatedDamageType;
 
 
+
 //also need to add Decapitated to each weapon...
 
 struct PlayerWeaponDamage{
@@ -98,7 +97,6 @@ struct PlayerDamage{
 
 var PlayerDamage DamageList[255];
 //var PlayerWeaponDamage PlayerWeaponDamageList[2048];
-
 
 event PreBeginPlay()
 {
@@ -241,52 +239,52 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 	}		
 
 
-    log(DamageType $chr(9)$WeaponName$chr(9)$RocketLauncherDamageType);
+    //log(DamageType $chr(9)$WeaponName$chr(9)$RocketLauncherDamageType);
 
     if((DamageType == RocketLauncherDamageType || DamageType == RocketLauncherAltDamageType) && WeaponName != RocketLauncherName){
 
-        log("rocket launcher damage type, but player not holding rocket launcher"$chr(9)$weaponName);
+       // log("rocket launcher damage type, but player not holding rocket launcher"$chr(9)$weaponName);
 
         WeaponName = RocketLauncherName;
 
     }else if((DamageType == PulseRifleDamageType || DamageType == PulseRifleAltDamageType) && WeaponName != PulseRifleName){
 
-        log("pulse damage but player not holding pulse rifle");
+       // log("pulse damage but player not holding pulse rifle");
         WeaponName = PulseRifleName;
 
     }else if((DamageType == BioRifleDamageType || DamageType == BioRifleAltDamageType) && WeaponName != BioRifleName){
 
-        log("bio damage but player not holding bio");
+        //log("bio damage but player not holding bio");
         WeaponName = BioRifleName;
 
     }else if((DamageType == ShockRifleDamageType || DamageType == ShockRifleAltDamageType) && WeaponName != ShockRifleName){
 
-        log("shockrifle damage but player not holding shockrifle");
+        //log("shockrifle damage but player not holding shockrifle");
         WeaponName = ShockRifleName;
 
     }else if(DamageType == RipperAltDamageType && WeaponName != RipperName){
 
-        log("ripper damage but player not holding ripper");
+       // log("ripper damage but player not holding ripper");
         WeaponName = RipperName;
 
     }else if(DamageType == FlakCannonAltDamageType && WeaponName != FlakCannonName){
 
-        log("flak cannon damage but player not holding flak cannon");
+        //log("flak cannon damage but player not holding flak cannon");
         WeaponName = FlakCannonName;
 
     }else if((DamageType == RedeemerDamageType || DamageType == RedeemerAltDamageType) && WeaponName != RedeemerName){
 
-        log("Redeemer damage but player not holding redeemer");
+        //log("Redeemer damage but player not holding redeemer");
         WeaponName = RedeemerName;
 
     }else if(bCheckBothRipperDamageTypes && DamageType == RipperAltDamageType && WeaponName != RipperName){
 
-        log("bCheckBothRipperDamage type override");
+        //log("bCheckBothRipperDamage type override");
         WeaponName = RipperName;
 
     }else if(bCheckBothFlakCannonDamageTypes && DamageType == FlakCannonAltDamageType && WeaponName != FlakCannonName){
 
-        log("bCheckBothFlakDamage type override");
+        //log("bCheckBothFlakDamage type override");
         WeaponName = FlakCannonName;
     }
 
@@ -491,5 +489,38 @@ function ModifyPlayer(Pawn P) {
 
 defaultproperties
 {
-	bIncludeAllDamageDone=True
+	ImpactHammerName="Impact Hammer"
+	ImpactHammerDamageType="impact"
+	ImpactHammerAltDamageType="impact"
+	EnforcerName="Enforcer"
+	EnforcerDamageType="shot"
+	EnforcerAltDamageType="shot"
+	BioRifleName="GES BioRifle"
+	BioRifleDamageType="Corroded"
+	BioRifleAltDamageType="Corroded"
+	ShockRifleName="Shock Rifle"
+	ShockRifleDamageType="jolted"
+	ShockRifleAltDamageType="jolted"
+	PulseRifleName="Pulse Gun"
+	PulseRifleDamageType="Pulsed"
+	PulseRifleAltDamageType="zapped"
+	RipperName="Ripper"
+	RipperDamageType="shredded"
+	RipperAltDamageType="RipperAltDeath"
+	MinigunName="Minigun"
+	MinigunDamageType="shot"
+	MinigunAltDamageType="shot"
+	FlakCannonName="Flak Cannon"
+	FlakCannonDamageType="shredded"
+	FlakCannonAltDamageType="FlakDeath"
+	RocketLauncherName="Rocket Launcher"
+	RocketLauncherDamageType="RocketDeath"
+	RocketLauncherAltDamageType="GrenadeDeath"
+	SniperRifleName="Sniper Rifle"
+	SniperRifleDamageType="shot"
+	SniperRifleAltDamageType="shot"
+	RedeemerName="Redeemer"
+	RedeemerDamageType="RedeemerDeath"
+	RedeemerAltDamageType="RedeemerDeath"
+	DecapitatedDamageType="Decapitated"
 }
