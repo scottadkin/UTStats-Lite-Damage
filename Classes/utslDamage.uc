@@ -225,10 +225,20 @@ function int getPlayerWeaponIndex(int PlayerIndex, string WeaponName){
 	return -1;
 }
 
-function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, int Damage, name DamageType){
+function UpdatePlayerWeaponStats(Pawn InstigatedBy, Pawn Victim, int Damage, name DamageType){
 
 	local int WeaponIndex;
 	local int PlayerIndex;
+    local PlayerReplicationInfo VPRI;
+	local PlayerReplicationInfo PRI;
+
+	local string WeaponName;
+
+    if(InstigatedBy == None || InstigatedBy.PlayerReplicationInfo == None) return;
+    if(Victim == None || Victim.PlayerReplicationInfo == None) return;
+
+    PRI = InstigatedBy.PlayerReplicationInfo;
+    VPRI = Victim.PlayerReplicationInfo;
 	
 	PlayerIndex = getPlayerIndexById(PRI.PlayerId);
 	
@@ -237,6 +247,30 @@ function UpdatePlayerWeaponStats(PlayerReplicationInfo PRI, string WeaponName, i
 		log("failed to find player index");
 		return;
 	}		
+
+
+    if(PRI.PlayerID == VPRI.PlayerId) return;
+
+    if(InstigatedBy.Weapon != None){
+        WeaponName = InstigatedBy.Weapon.ItemName;
+    }
+
+    
+
+    //if(InstigatedBy != None && InstigatedBy.PlayerReplicationInfo != None){
+	
+		//Ipri = InstigatedBy.PlayerReplicationInfo;
+		
+		//if(Victim != None && Vpri != None && Vpri.PlayerID != PRI.PlayerID){		
+		
+			//if(InstigatedBy.Weapon != None){
+			//	InstigatedByWeaponName = InstigatedBy.Weapon.ItemName;
+			//}
+		
+			//UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone, DamageType);
+			//UpdatePlayerWeaponStats(InstigatedBy, Victim ,InstigatedByWeaponName, DamageDone, DamageType);
+		//}
+	//}
 
 
     //log(DamageType $chr(9)$WeaponName$chr(9)$RocketLauncherDamageType);
@@ -304,29 +338,11 @@ function updateStats(Pawn Victim, Pawn InstigatedBy, name DamageType, int Damage
 
 	local PlayerReplicationInfo VPRI;
 	local PlayerReplicationInfo IPRI;
+	
 
-	local string InstigatedByWeaponName;
-
-
+			//UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone, DamageType);
+	UpdatePlayerWeaponStats(InstigatedBy, Victim, DamageDone, DamageType);
 	
-	if(Victim.PlayerReplicationInfo != None){
-	
-		Vpri = Victim.PlayerReplicationInfo;
-	}
-	
-	if(InstigatedBy != None && InstigatedBy.PlayerReplicationInfo != None){
-	
-		Ipri = InstigatedBy.PlayerReplicationInfo;
-		
-		if(Victim != None && Vpri != None && Vpri.PlayerID != Ipri.PlayerID){		
-		
-			if(InstigatedBy.Weapon != None){
-				InstigatedByWeaponName = InstigatedBy.Weapon.ItemName;
-			}
-		
-			UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone, DamageType);
-		}
-	}
 	
 	
 	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn') && Vpri != None){
