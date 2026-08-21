@@ -5,6 +5,10 @@ class utslDamage expands Mutator config(UTStatsLiteDamage);
 
 //if set to false when dealing 100 damage to a player with 2 health, the damage is counted as 2 rather than 100
 var config bool bIncludeAllDamageDone;
+
+//if set to true, self damage, fall damage, team cannon damage will be disabled.
+var config bool bOnlyTrackWeaponDamage;
+
 var bool bTeamGame;
 
 var config string ImpactHammerName;
@@ -70,13 +74,6 @@ var config string RedeemerName;
 var config name RedeemerDamageType;
 var config name RedeemerAltDamageType;
 
-
-var config name DecapitatedDamageType;
-
-
-
-//also need to add Decapitated to each weapon...
-
 struct PlayerWeaponDamage{
 	var string WeaponName;
 	var int DamageDelt;
@@ -96,7 +93,6 @@ struct PlayerDamage{
 };
 
 var PlayerDamage DamageList[255];
-//var PlayerWeaponDamage PlayerWeaponDamageList[2048];
 
 event PreBeginPlay()
 {
@@ -239,6 +235,12 @@ function UpdatePlayerWeaponStats(Pawn InstigatedBy, Pawn Victim, int Damage, nam
 
     PRI = InstigatedBy.PlayerReplicationInfo;
     VPRI = Victim.PlayerReplicationInfo;
+
+    if(PRI.PlayerID == VPRI.PlayerID) return;
+
+    if(bTeamGame && PRI.Team == VPRI.Team){
+        return;
+    }
 	
 	PlayerIndex = getPlayerIndexById(PRI.PlayerId);
 	
@@ -248,32 +250,9 @@ function UpdatePlayerWeaponStats(Pawn InstigatedBy, Pawn Victim, int Damage, nam
 		return;
 	}		
 
-
-    if(PRI.PlayerID == VPRI.PlayerId) return;
-
     if(InstigatedBy.Weapon != None){
         WeaponName = InstigatedBy.Weapon.ItemName;
     }
-
-    
-
-    //if(InstigatedBy != None && InstigatedBy.PlayerReplicationInfo != None){
-	
-		//Ipri = InstigatedBy.PlayerReplicationInfo;
-		
-		//if(Victim != None && Vpri != None && Vpri.PlayerID != PRI.PlayerID){		
-		
-			//if(InstigatedBy.Weapon != None){
-			//	InstigatedByWeaponName = InstigatedBy.Weapon.ItemName;
-			//}
-		
-			//UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone, DamageType);
-			//UpdatePlayerWeaponStats(InstigatedBy, Victim ,InstigatedByWeaponName, DamageDone, DamageType);
-		//}
-	//}
-
-
-    //log(DamageType $chr(9)$WeaponName$chr(9)$RocketLauncherDamageType);
 
     if((DamageType == RocketLauncherDamageType || DamageType == RocketLauncherAltDamageType) && WeaponName != RocketLauncherName){
 
@@ -339,10 +318,12 @@ function updateStats(Pawn Victim, Pawn InstigatedBy, name DamageType, int Damage
 	local PlayerReplicationInfo VPRI;
 	local PlayerReplicationInfo IPRI;
 	
-
-			//UpdatePlayerWeaponStats(Ipri ,InstigatedByWeaponName, DamageDone, DamageType);
 	UpdatePlayerWeaponStats(InstigatedBy, Victim, DamageDone, DamageType);
 	
+
+    if(bOnlyTrackWeaponDamage){
+        return;
+    }
 	
 	
 	if(InstigatedBy != None && InstigatedBy.IsA('StationaryPawn') && Vpri != None){
@@ -421,7 +402,6 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 	local int FixedDamage;
 	local DamageTracker DT;
 	
-	
 	FixedDamage = ActualDamage;
 	
 	DT = FindTracker(Victim);
@@ -433,15 +413,12 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		log("TRACKER IS NONE, fallingback to ActualDamage");
 	}
 	
-	
-	
 	if(!bIncludeAllDamageDone && Victim != None && Victim.Health < FixedDamage){
 		FixedDamage = Victim.Health;
 	}
 	
 	updateStats(Victim, InstigatedBy, DamageType, fixedDamage);
 
-	
 
    	if (NextDamageMutator != None)
         NextDamageMutator.MutatorTakeDamage(ActualDamage,Victim,InstigatedBy,HitLocation,Momentum,DamageType);
@@ -457,8 +434,11 @@ function bool HandleEndGame(){
 		
 		D = DamageList[i];
 		if(d.PID == -1) break;
-		printLog("d" $chr(9)$ D.PID $chr(9)$ D.DamageDelt $chr(9)$D.DamageTaken$chr(9)$D.SelfDamage$chr(9)$D.teamDamageDelt$chr(9)$D.teamDamageTaken$chr(9)$D.FallDamage$chr(9)$D.DrownDamage$chr(9)$D.CannonDamage);
-		
+
+        if(!bOnlyTrackWeaponDamage){
+		    printLog("d" $chr(9)$ D.PID $chr(9)$ D.DamageDelt $chr(9)$D.DamageTaken$chr(9)$D.SelfDamage$chr(9)$D.teamDamageDelt$chr(9)$D.teamDamageTaken$chr(9)$D.FallDamage$chr(9)$D.DrownDamage$chr(9)$D.CannonDamage);
+        }
+
 		for(x = 0; x < 32; x++){
 		
 			if(D.WeaponDamage[x].WeaponName == ""){
@@ -538,5 +518,4 @@ defaultproperties
 	RedeemerName="Redeemer"
 	RedeemerDamageType="RedeemerDeath"
 	RedeemerAltDamageType="RedeemerDeath"
-	DecapitatedDamageType="Decapitated"
 }

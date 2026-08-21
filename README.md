@@ -1,7 +1,17 @@
 # UTStats-Lite-Damage
  Damage Addon for UTStats Lite Mutator
 
- Basic damage logging for players:
+
+## Basic Damage Per Weapon For Players
+- Keeps track of damage a player has done to an enemy.
+- Most reliable for hitscan weapons.
+- Projectile weapons have additional options in **UTStatsLiteDamage.ini**, you can set the primary damage type as well as the alt damage type, this will allow mods that change the damage types to be supported with a simple config change. Default UT weapons have duplicated damage types for projectiles for flak cannon primary, ripper primary and this method won't be as reliable for those weapons. The hitscan weapons also have options but aren't required at this time.
+- If you are not using a mutator that changes the damage types for Ripper primary fire make sure **bCheckBothRipperDamageTypes** is set to **False**. 
+- If you are not using a mutator that changes the damage types for Flak Cannon primary fire make sure **bCheckBothFlakCannonDamageTypes** is set to **False**. 
+
+
+## Basic Damage Logging For Players
+**bOnlyTrackWeaponDamage** must be set to **False** for these to be tracked.
  - Damage Delt
  - Damage Received
  - Self Damage Taken
@@ -9,12 +19,6 @@
  - Team Damage Taken
  - Drown Damage Taken
  - Fall Damage Taken
-
-## Test Weapon Damage System
-- Most reliable for hitscan weapons.
-- Projectile weapons have additional options in **UTStatsLiteDamage.ini**, you can set the primary damage type as well as the alt damage type, this will allow mods that change the damage types to be supported with a simple config change. Default UT weapons have duplicated damage types for projectiles for flak cannon primary, ripper primary and this method won't be as reliable for those weapons. The hitscan weapons also have options but aren't required at this time.
-- If you are not using a mutator that changes the damage types for Ripper primary fire make sure **bCheckBothRipperDamageTypes** is set to **False**. 
-- If you are not using a mutator that changes the damage types for Flak Cannon primary fire make sure **bCheckBothFlakCannonDamageTypes** is set to **False**. 
 
 
 ## Installing
